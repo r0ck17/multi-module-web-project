@@ -5,7 +5,9 @@ public class User {
     private long id;
     private String name;
 
-    public User() {}
+    public User() {
+
+    }
 
     public User(String name) {
         this.id = ++counter;
