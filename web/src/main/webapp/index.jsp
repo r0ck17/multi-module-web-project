@@ -1,6 +1,6 @@
 <html>
 <body>
-<h2>Multi module web project</h2>
-<a href="/user">Info about user from database</a>
+<h2>Multi module web project with json database</h2>
+<a href="/user">Show all users</a>
 </body>
 </html>

@@ -57,8 +57,7 @@ public class UserDao {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             Map<Long, User> users = objectMapper.readValue(file,
-                    new TypeReference<Map<Long, User>>() {
-                    });
+                    new TypeReference<Map<Long, User>>() {});
             return users;
         } catch (IOException e) {
             throw new RuntimeException(e);
