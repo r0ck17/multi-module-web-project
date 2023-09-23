@@ -15,8 +15,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class UserDao {
+    private static final UserDao INSTANCE = new UserDao();
     private static final String pathJson = "database.json";
     private static final File file = new File(pathJson).getAbsoluteFile();
+
+
+    private UserDao() {
+    }
+
+    public static UserDao getInstance() {
+        return INSTANCE;
+    }
 
     public Map<Long, User> getAllUsers() {
         return getUserFromJson();

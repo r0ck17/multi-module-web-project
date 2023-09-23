@@ -1,7 +1,5 @@
-import by.javaguru.User;
 import by.javaguru.UserDto;
 import by.javaguru.UserService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,45 +7,66 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Comparator;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @WebServlet("/user")
 public class UserServlet extends HttpServlet {
-    private static UserService userService = new UserService();
+    private static UserService userService = UserService.genInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try (PrintWriter writer = resp.getWriter()) {
+            resp.setContentType("text/html");
+            resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            long userId = 0;
+
+            try {
+                userId = Long.parseLong(req.getParameter("id"));
+            } catch (NumberFormatException e) {
+                writer.println(String.format("\"Wrong user id: '%s'.\"", req.getParameter("id")));
+                return;
+            }
+
+            Optional<UserDto> user = userService.getUser(userId);
+
+            if (user.isPresent()) {
+                writer.println(String.format("<p>User with id %d: %s</p>",
+                                userId, user.get().getName()));
+            } else {
+                writer.println(String.format("User with id %d not found", userId));
+            }
+
+            writer.println("<a href=\"/users\">Back to users list</a>");
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
         resp.setContentType("text/html");
-        PrintWriter writer = resp.getWriter();
+        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        long userId;
 
-        userService.changeUserNameById(5, "Trofim"); // 2.3 - Изменить имя пользователя по его Id
-        Map<Long, User> allUsers = userService.getAllUsers(); // 2.1 - Получить список всех пользователей
-
-        long key = 12;
-        Optional<UserDto> user = userService.getUser(key); // 2.2 Вернуть информацию о пользователе по его Id
-        String userInfo = user.map(u -> u.getName()).orElse("User not found");
-
-        writer.println("<html>");
-        writer.println("    <body>");
-        writer.println("        <table border=\"2\">");
-        writer.println("            <tr>");
-        writer.println("                <th>ID</th>");
-        writer.println("                <th>User name</th>");
-        writer.println("            </tr>");
-
-        for (var entry : allUsers.values()) {
-            writer.println("            <tr>");
-            writer.println(String.format("                <td>%s</td>", entry.getId()));
-            writer.println(String.format("                <td>%s</td>", entry.getName()));
-            writer.println("            </tr>");
+        try {
+            userId = Long.parseLong(req.getParameter("id"));
+        } catch (NumberFormatException | NullPointerException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Wrong user id format");
+            return;
         }
 
-        writer.println("        </table>");
-        writer.println(String.format("        <p>ID: '%d. User info: %s</p>", key, userInfo));
-        writer.println("    </body>");
-        writer.println("</html>");
-        writer.close();
+        String userNewName = req.getParameter("name");
+
+        if (userNewName == null || userNewName.isEmpty()) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "User name is empty");
+            return;
+        }
+
+        if ( userService.getUser(userId).isPresent()) {
+            userService.changeUserNameById(userId, userNewName);
+            resp.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, String.format("User with id '%d' not found", userId));
+        }
     }
 }
