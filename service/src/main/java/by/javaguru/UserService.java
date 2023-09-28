@@ -10,7 +10,7 @@ public class UserService {
     private UserService() {
     }
 
-    public static UserService genInstance() {
+    public static UserService getInstance() {
         return INSTANCE;
     }
 

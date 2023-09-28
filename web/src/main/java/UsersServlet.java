@@ -12,7 +12,7 @@ import java.util.Map;
 
 @WebServlet("/users")
 public class UsersServlet extends HttpServlet {
-    private static UserService userService = UserService.genInstance();
+    private static UserService userService = UserService.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
